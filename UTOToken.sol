@@ -41,20 +41,15 @@ contract UTOToken {
         require(balanceOf[_from] >= _value);
         // Check for overflows
         require(SafeMath.add(balanceOf[_to], _value) >= balanceOf[_to]);
-        //require(balanceOf[_to] + _value >= balanceOf[_to]);
         // Save this for an assertion in the future
         uint previousBalances = SafeMath.add(balanceOf[_from], balanceOf[_to]);
-        //uint previousBalances = balanceOf[_from] + balanceOf[_to];
         // Subtract from the sender
         balanceOf[_from] = SafeMath.sub(balanceOf[_from], _value);
-        //balanceOf[_from] -= _value;
         // Add the same to the recipient
         balanceOf[_to] = SafeMath.add(balanceOf[_to], _value);
-        //balanceOf[_to] += _value;
         emit Transfer(_from, _to, _value);
         // Asserts are used to use static analysis to find bugs in your code. They should never fail
         assert(SafeMath.add(balanceOf[_from], balanceOf[_to]) == previousBalances);
-        //assert(balanceOf[_from] + balanceOf[_to] == previousBalances);
     }
 
     /**
