@@ -1,4 +1,4 @@
-The software on this page complies with the GPL open source code and you are free to distribute and modify it, subject to the following restrictions:
+  The software on this page complies with the GPL open source code and you are free to distribute and modify it, subject to the following restrictions:
 一， As long as you clearly and properly publish the copyright notice on each copy of the UTour open source code, keep the statement of this license and the statement without warranty intact, give a license's transcript to each other program acceptor together with the program. You can use any media to copy and publish the source code of the original program you received. You may also charge a fee for the actual action of transferring the copy, but you must obtain prior consent.
 
 二， You can modify one or more copies of UTour's open source code or any part of the program to create a program-based work. As long as you meet all the conditions below, you can copy and distribute this modified program or work as described in the previous paragraph.
