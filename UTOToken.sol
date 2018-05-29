@@ -18,7 +18,7 @@ contract UTOToken {
 
     // This generates a public event on the blockchain that will notify clients
     event Transfer(address indexed from, address indexed to, uint256 value);
-
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
     // This notifies clients about the amount burnt
     event Burn(address indexed from, uint256 value);
 
@@ -27,7 +27,8 @@ contract UTOToken {
      *
      * Initializes contract with initial supply tokens to the creator of the contract
      */
-    function UTOToken() public {
+    // function UTOToken() public {
+    constructor () public {
         balanceOf[msg.sender] = totalSupply;                // Give the creator all initial tokens
     }
 
@@ -42,14 +43,14 @@ contract UTOToken {
         // Check for overflows
         require(SafeMath.add(balanceOf[_to], _value) >= balanceOf[_to]);
         // Save this for an assertion in the future
-        uint previousBalances = SafeMath.add(balanceOf[_from], balanceOf[_to]);
+        uint previousBalances = balanceOf[_from] + balanceOf[_to];
         // Subtract from the sender
-        balanceOf[_from] = SafeMath.sub(balanceOf[_from], _value);
+        balanceOf[_from] -= _value;
         // Add the same to the recipient
-        balanceOf[_to] = SafeMath.add(balanceOf[_to], _value);
+        balanceOf[_to] += _value;
         emit Transfer(_from, _to, _value);
         // Asserts are used to use static analysis to find bugs in your code. They should never fail
-        assert(SafeMath.add(balanceOf[_from], balanceOf[_to]) == previousBalances);
+        assert(balanceOf[_from] + balanceOf[_to] == previousBalances);
     }
 
     /**
@@ -74,9 +75,10 @@ contract UTOToken {
      * @param _value the amount to send
      */
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        require(_value <= allowance[_from][msg.sender]);     // Check allowance
-        allowance[_from][msg.sender] = SafeMath.sub(allowance[_from][msg.sender], _value);
-        //allowance[_from][msg.sender] -= _value;
+        require(_value <= allowance[_from][msg.sender]);     
+        // Check allowance
+        // allowance[_from][msg.sender] = SafeMath.sub(allowance[_from][msg.sender], _value);
+        allowance[_from][msg.sender] -= _value;
         _transfer(_from, _to, _value);
         return true;
     }
@@ -89,9 +91,10 @@ contract UTOToken {
      * @param _spender The address authorized to spend
      * @param _value the max amount they can spend
      */
-    function approve(address _spender, uint256 _value) public
-        returns (bool success) {
+    function approve(address _spender, uint256 _value) public returns (bool success) {
+        require(_value <= balanceOf[msg.sender]);
         allowance[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
         return true;
     }
 
@@ -104,14 +107,16 @@ contract UTOToken {
      * @param _value the max amount they can spend
      * @param _extraData some extra information to send to the approved contract
      */
-    function approveAndCall(address _spender, uint256 _value, bytes _extraData)
-        public
-        returns (bool success) {
+    function approveAndCall(address _spender, uint256 _value, bytes _extraData) public returns (bool success) {
         tokenRecipient spender = tokenRecipient(_spender);
         if (approve(_spender, _value)) {
             spender.receiveApproval(msg.sender, _value, this, _extraData);
             return true;
         }
+    }
+
+    function allowance(address _owner, address _spender) view public returns (uint256 remaining) {
+        return allowance[_owner][_spender];
     }
 
     /**
@@ -123,10 +128,10 @@ contract UTOToken {
      */
     function burn(uint256 _value) public returns (bool success) {
         require(balanceOf[msg.sender] >= _value);   // Check if the sender has enough
-        balanceOf[msg.sender] = SafeMath.sub(balanceOf[msg.sender], _value);
-        //balanceOf[msg.sender] -= _value;            // Subtract from the sender
-        totalSupply = SafeMath.sub(totalSupply, _value);
-        //totalSupply -= _value;                      // Updates totalSupply
+        // balanceOf[msg.sender] = SafeMath.sub(balanceOf[msg.sender], _value);
+        balanceOf[msg.sender] -= _value;            // Subtract from the sender
+        // totalSupply = SafeMath.sub(totalSupply, _value);
+        totalSupply -= _value;                      // Updates totalSupply
         emit Burn(msg.sender, _value);
         return true;
     }
@@ -142,12 +147,12 @@ contract UTOToken {
     function burnFrom(address _from, uint256 _value) public returns (bool success) {
         require(balanceOf[_from] >= _value);                // Check if the targeted balance is enough
         require(_value <= allowance[_from][msg.sender]);    // Check allowance
-        balanceOf[_from] = SafeMath.sub(balanceOf[_from], _value);
-        //balanceOf[_from] -= _value;                         // Subtract from the targeted balance
-        allowance[_from][msg.sender] = SafeMath.sub(allowance[_from][msg.sender], _value);
-        //allowance[_from][msg.sender] -= _value;             // Subtract from the sender's allowance
-        totalSupply = SafeMath.sub(totalSupply, _value);
-        //totalSupply -= _value;                              // Update totalSupply
+        // balanceOf[_from] = SafeMath.sub(balanceOf[_from], _value);
+        balanceOf[_from] -= _value;                         // Subtract from the targeted balance
+        // allowance[_from][msg.sender] = SafeMath.sub(allowance[_from][msg.sender], _value);
+        allowance[_from][msg.sender] -= _value;             // Subtract from the sender's allowance
+        // totalSupply = SafeMath.sub(totalSupply, _value);
+        totalSupply -= _value;                              // Update totalSupply
         emit Burn(_from, _value);
         return true;
     }
